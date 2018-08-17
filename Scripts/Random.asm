@@ -6,6 +6,9 @@
 
 ;Simple macro for getting random numbers, using LSFR
 ;
+;	Parameters:
+;		1) The seed
+;		2) The XOR value
 GetRandom:	.macro
 	LDA \1
 	BEQ .DoEor\@

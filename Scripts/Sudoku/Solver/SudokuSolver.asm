@@ -3,6 +3,11 @@
 ; in SudokuPuzzle
 ;==========================================
 
+;Callable Functions:
+;--------------------
+;	SolvePuzzle
+
+
 
 ;Solve a sudoku puzzle using a depth-first search algorithm	
 ;
@@ -12,7 +17,6 @@
 ;	Results:
 ;		SudokuPuzzle   = The solved puzzle
 ;		SudokuSolution = The origional puzzle
-;		Acc = (0 = Solved, 1 = Unsolved)
 SolvePuzzle:
 
 	;All cells in the tree are eigher:
@@ -24,23 +28,6 @@ SolvePuzzle:
 	
 	LDA #$00
 	STA TreePosition
-	JMP SolvePuzzleRecurse
-
-
-SolvePuzzleRecurse:
-	LDX TreePosition
-	LDA SudokuTree, X
-	CMP #$FF
-	BEQ .recurse	;  Test 1: Is permananet number??
-
-	STX CurrentCell
-	JSR TestCell
-	BNE .NextSpace		;Test 2: 	
-	
-
-
-
-
 .MainLoop
 	LDX TreePosition
 	LDA SudokuTree, X
@@ -109,7 +96,7 @@ SolvePuzzleRecurse:
 
 
 ;Create a new number in the Tree
-NewNumber:
+.NewNumber
 
 	;Find out which numbers can go in this space
 	LDA AvailableNumbers

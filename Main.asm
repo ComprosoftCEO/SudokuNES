@@ -3,9 +3,9 @@
 
 
 ;iNES Header
-	.inesprg 2   ; one (1) bank of 16 K program code
-	.ineschr 1   ; one (1) bank of 8 K picture data
-	.inesmap 0   ; we use mapper 0
+	.inesprg 2   ; Two (1) banks of 16 K program code (32 K total)
+	.ineschr 1   ; One (1) bank of 8 K picture data
+	.inesmap 0   ; We use mapper 0
 	.inesmir 0   ; Vertical mirroring
 	
 
@@ -218,7 +218,7 @@ NMI:
 ;--------------------Other Data--------------------------
   
 Palette:
-  .db $0F,$0F,$30,$2, $0F,$16,$1A,$37, $0F,$28,$12,$3B, $0F,$0F,$0F,$0F	;Background (0,1,2,3)
+  .db $0F,$07,$30,$04, $0F,$16,$1A,$37, $0F,$28,$12,$3B, $0F,$0F,$0F,$0F	;Background (0,1,2,3)
   .db $0F,$30,$30,$27,$0F,$30,$30,$3C,$0F,$1C,$30,$14,$0F,$02,$30,$3C	;Sprites (0,1,2,3)  
 
 	.include "Data/ComprosoftData.asm"
@@ -234,9 +234,18 @@ Palette:
 	.include "Scripts/Random.asm"
 	.include "Scripts/Math.asm"
 	.include "Scripts/Palette.asm"
-	.include "Scripts/Sudoku/SudokuFunctions.asm"
-	.include "Scripts/Sudoku/SudokuSolver.asm"
-	.include "Scripts/Sudoku/SudokuGenerator.asm"	
+
+
+;  ==Sudoku Solver==
+	.include "Scripts/Sudoku/Solver/SudokuSolver.asm"
+	.include "Scripts/Sudoku/Solver/TestCell.asm"
+	.include "Scripts/Sudoku/Solver/TestStack.asm"
+	.include "Scripts/Sudoku/Solver/TestHorCells.asm"
+	.include "Scripts/Sudoku/Solver/TestVertCells.asm"
+	.include "Scripts/Sudoku/Solver/TestSquareCells.asm"
+
+;  ==Sudoku Generator==
+	.include "Scripts/Sudoku/Generator/SudokuGenerator.asm"	
 
 ;---------------------Other data----------
   .bank 2

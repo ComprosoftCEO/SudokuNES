@@ -1,18 +1,4 @@
-SquareTable:		;Lookup table for the 3x3 squares in a sudoku board
-  .db 0,0,0, 3,3,3, 6,6,6
-  .db 0,0,0, 3,3,3, 6,6,6
-  .db 0,0,0, 3,3,3, 6,6,6
-  
-  .db 27,27,27, 30,30,30, 33,33,33 
-  .db 27,27,27, 30,30,30, 33,33,33 
-  .db 27,27,27, 30,30,30, 33,33,33
-  
-  .db 54,54,54, 57,57,57, 60,60,60
-  .db 54,54,54, 57,57,57, 60,60,60
-  .db 54,54,54, 57,57,57, 60,60,60
 
-SquareAddition:		;What value to add during each step in the loop
-  .db 1,1,7, 1,1,7, 1,1,7  
   
 DummyData:
   .db 1,0,2, 0,4,0, 9,0,5
