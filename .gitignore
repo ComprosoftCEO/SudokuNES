@@ -4,3 +4,6 @@
 
 # Backup folder
 Backup/
+
+# Applications
+*.exe

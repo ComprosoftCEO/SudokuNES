@@ -88,26 +88,24 @@ AttribUpdateOn	.rs 1			;If 0, don't update
   
 SudokuPuzzle	.rs 81			;The current sudoku puzzle (Where puzzle is generated)
 SudokuSolution	.rs 81			;The solution to the puzzle
-SudokuStack		.rs 81			;A stack that stores all 81 possible locations on the board
-SudokuBoard = SudokuStack		;   Also serves as the active board for the gameplay
-
-NumbersLeft		.rs 1			;The sudoku stack pointer
-SpotToPull		.rs 1			;Where to remove a number from the sudoku stack
-LastCell		.rs 1			;The last cell on the grid being tested
-NumberInCell	.rs 1			;The number pulled from the current cell
-
-
-  .rsset $0700
+SudokuTree		.rs 81			;A tree that stores all 81 possible locations on the board
+SudokuBoard = SudokuTree		;   Also serves as the active board for the gameplay (So the board can be reset)
   
 CurrentCell		.rs 1		;The current cell being tested								
 CellCol			.rs 1		;The column of the cell being tested
 CellRow			.rs 1		;The row of the cell being tested
 CellSquare		.rs 1		;The 3x3 square of the cell being tested
-CellNumbers		.rs 2		;Which numbers can and cannot go in the cell (98765432 1xxxxxxx)
-TempCellNumbers	.rs 2		;Temp spot to store the current cell numbers being filled							
 
+CellInvalid		.rs 1		;1 = Cell tested is invalid		
+
+	.rsset $0700
+		
 AvailableNumbers	.rs 1	;How many numbers are available in the current space
 AvailableStack 		.rs 9	;A tiny stack for all available sudoku numbers
+TempAvailableStack	.rs 9	;Temp stack to store before copying into the available stack
+
+TreePosition		.rs 1	;Where am I in the tree??
+
 
 ;------------------Start of Code-------------------------	
   .bank 0
@@ -118,7 +116,7 @@ Reset:
 	.include "Scripts/Reset.asm"
 	
 	;Set up random numbers
-	LDA XorVals
+	LDA XorVals+3
 	STA Random1_XOR
 	STA Random2_XOR
 	STA Random3_XOR
@@ -150,7 +148,7 @@ Title:
 	
 	;JSR CopyDummyData
 	
-	;JSR GenerateSudoku
+	JSR GenerateSudoku
 	STA TempLow
 	
 	JSR DisableScreen
@@ -236,8 +234,10 @@ Palette:
 	.include "Scripts/Random.asm"
 	.include "Scripts/Math.asm"
 	.include "Scripts/Palette.asm"
-	.include "Scripts/Sudoku.asm"
-	
+	.include "Scripts/Sudoku/SudokuFunctions.asm"
+	.include "Scripts/Sudoku/SudokuSolver.asm"
+	.include "Scripts/Sudoku/SudokuGenerator.asm"	
+
 ;---------------------Other data----------
   .bank 2
 	.org $C000
