@@ -1,0 +1,6 @@
+*.nes
+*.fns
+*.deb
+
+# Backup folder
+Backup/
