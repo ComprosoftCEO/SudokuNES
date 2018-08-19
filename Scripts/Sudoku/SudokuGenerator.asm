@@ -14,11 +14,19 @@
 ;Draw the sudoku puzzle to the screen, using the data
 ;From the Sudoku stack
 DrawSudoku:
+	LDA SudokuLine
+	CMP #81
+	BNE .start		;Don't reset anything
+
+	;Reset the starting address
 	LDA #$20
 	STA PPU_High
 	LDA #$00
 	STA PPU_Low
-	LDX #$00
+	STA SudokuLine
+	
+.start		;Start the loop
+	LDX SudokuLine
 	LDY #$00
 .loop1
 	LDA $2002
@@ -42,18 +50,26 @@ DrawSudoku:
 	INY
 	CPY #$09
 	BNE .loop2
+	JSR NoScroll
 	LDY #$00
+	
 	LDA PPU_Low
 	CLC
 	ADC #$20
 	STA PPU_Low
 	BCC .skip
 	INC PPU_High
-.skip	
-	CPX #81
-	BNE .loop1
-	RTS
 
+.skip
+	STX SudokuLine
+	RTS
+	;CPX #81
+	;BNE .loop1
+	;RTS
+
+	
+	
+	
 CopyDummyData:
 	LDX #$00
 .loop
@@ -71,7 +87,7 @@ GenerateSudoku:
 	
 	;How to generate a Sudoku Puzzle:
 	;================================
-	;	1 - Fill the grid with 11 random numbers
+	;	1 - Fill in the diagonal 3x3 grids the the numbers 1 to 9
 	;	2 - Use a randomized depth-first algorithm to
 	;		  solve the puzzle (no solution = goto step 1)
 	;	3 - Carve out holes, corresponding to the difficulty
@@ -91,53 +107,113 @@ GenerateSudoku:
 ;		SudokuSolution = All reset
 ResetGrid:
 	LDA #$00
-	LDX #$81
+	LDX #81
 .loop
 	STA SudokuPuzzle, X
-	STA SudokuSolution, X
 	DEX
 	BNE .loop
 	RTS
 
+;Shuffle up the digits in the stack
+;
+;	Parameters:
+;		SudokuStack = The stack to shuffle
+;
+;	Results:
+;		SudokuStacks[SudokuStack] = Shuffled stack
+RandomizeStack:
+	JSR GetRandom3
+	AND #$07				;Shuffle 1 to 8 times
+	CLC
+	ADC #$01
+	STA RandomCounter		;Number of loop iterations
+.loop
+	JSR GetRandom1			;Number 1 index to swap
+	AND #$0F				;Do a modulus 9 lookup
+	TAY
+	LDA Mod9, Y
+	TAY
+	STY RandomIndex
+	LDA [SudokuStack], Y	;Get Number 1
+	TAX						;Store it in X
+	JSR GetRandom2			;Number 2 index to swap
+	AND #$0F				;Do a modulus 9 lookup
+	TAY
+	LDA Mod9, Y
+	TAY
+	LDA [SudokuStack], Y	;Get Number 2
+	STA RandomNumber		;Store it in a temporary location
+	TXA
+	STA [SudokuStack], Y	;Store Number 1 in Number 2
+	LDA RandomNumber
+	LDY RandomIndex
+	STA [SudokuStack], Y	;Store Number 2 in Number 1
+	DEC RandomIndex
+	BNE .loop
+	RTS
 
+	
+;Copy the stack from RandomStack to a 3x3 cell in the Sudoku puzzle
+;
+;	Parameters:
+;	  X = Starting index in the sudoku puzzle
+CopyStack:
+	LDY #$00
+	STY SquareCounter
+.loop
+	LDA RandomStack, Y
+	STA SudokuPuzzle, X
+	
+	;Add +1, +, +7, etc
+	TXA
+	LDX SquareCounter
+	INC SquareCounter
+	CLC
+	ADC SquareAddition, X
+	TAX
+	
+	INY
+	CPY #9
+	BNE .loop
+	RTS
+	
+	
 ;Fill the sudoku puzzle with the starting numbers
 ;
 ;	Results:
-;		SudokuPuzzle = Filled with 11 random numbers
+;		SudokuPuzzle = Diagonal 3x3 grids filled with the numbers 1 to 9
 InitialNumbers:
-	;1 - Pick a spot from all available spots
-	;2 - Pick a number from all available numbers
-	;3 - Repeat 11 times
 
-	LDA #11
-	STA Temp2	;Temp2 is the counter
+	;Set up the stack shuffler
+	LDA #LOW(RandomStack)
+	STA SudokuStack
+	LDA #HIGH(RandomStack)
+	STA SudokuStack+1
 
+	;Fill the random stack with the numbers 1 to 9
+	LDX #$00
+	LDA #$01
 .loop
-	;Pick a random spot using the Rand0N function
-	LDA #81
-	STA RandMax
-.repick
-	JSR Rand0N
-	TAX
-	LDA SudokuPuzzle, X		;Verify that the number is blank
-	BNE .repick
-
-	STX CurrentCell		;Use this cell...
-
-	;Calculate which numbers can go onto the stack
-	JSR TestCell
-	BNE .repick						;If there are no options, pick another space
-	
-	;Now pick a random number to fill in
-	STA RandMax
-	JSR Rand0N
-
-	;And store that number in the puzzle
-	TAX
-	LDA AvailableStack, X
-	LDX CurrentCell
-	STA SudokuPuzzle, X
-
-	DEC Temp2
+	STA RandomStack, X
+	INX
+	CLC
+	ADC #$01
+	CPX #9
 	BNE .loop
-	RTS
+	
+	;First 3x3 cell
+	JSR RandomizeStack
+	LDX #00
+	JSR CopyStack
+	
+	;Second 3x3 cell
+	JSR RandomizeStack
+	LDX #30
+	JSR CopyStack
+	
+	;Final 3x3 cell
+	JSR RandomizeStack
+	LDX #60
+	JSR CopyStack
+	
+	RTS 

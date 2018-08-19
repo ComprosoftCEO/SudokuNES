@@ -1,6 +1,7 @@
 *.nes
 *.fns
 *.deb
+*.cdl
 
 # Backup folder
 Backup/
